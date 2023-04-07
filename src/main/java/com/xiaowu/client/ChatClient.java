@@ -1,7 +1,6 @@
 package com.xiaowu.client;
 
-import com.xiaowu.message.LoginRequestMessage;
-import com.xiaowu.message.LoginResponseMessage;
+import com.xiaowu.message.*;
 import com.xiaowu.protocol.MessageCodecSharable;
 import com.xiaowu.protocol.ProcotolFrameDecoder;
 import io.netty.bootstrap.Bootstrap;
@@ -15,9 +14,11 @@ import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class ChatClient {
@@ -83,6 +84,39 @@ public class ChatClient {
                                                     System.out.println("gquit [group name]");
                                                     System.out.println("quit");
                                                     System.out.println("==================================");
+                                                    String command = scanner.nextLine();
+                                                    String[] arrays = command.split(" ");
+                                                    switch (arrays[0]) {
+                                                        case "send":
+                                                            ChatRequestMessage chatRequestMessage = new ChatRequestMessage(username, arrays[1], arrays[2]);
+                                                            ctx.writeAndFlush(chatRequestMessage);
+                                                            break;
+                                                        case "gsend":
+                                                            GroupChatRequestMessage groupChatRequestMessage = new GroupChatRequestMessage(username, arrays[1], arrays[2]);
+                                                            ctx.writeAndFlush(groupChatRequestMessage);
+                                                            break;
+                                                        case "gcreate":
+                                                            GroupCreateRequestMessage groupCreateRequestMessage = new GroupCreateRequestMessage(
+                                                                    arrays[1], Arrays.stream(arrays[2].split(",")).collect(Collectors.toSet())
+                                                            );
+                                                            ctx.writeAndFlush(groupCreateRequestMessage);
+                                                            break;
+                                                        case "gmembers":
+                                                            GroupMembersRequestMessage groupMembersRequestMessage = new GroupMembersRequestMessage(arrays[1]);
+                                                            ctx.writeAndFlush(groupMembersRequestMessage);
+                                                            break;
+                                                        case "gjoin":
+                                                            GroupJoinRequestMessage groupJoinRequestMessage = new GroupJoinRequestMessage(username, arrays[1]);
+                                                            ctx.writeAndFlush(groupJoinRequestMessage);
+                                                            break;
+                                                        case "gquit":
+                                                            GroupQuitRequestMessage groupQuitRequestMessage = new GroupQuitRequestMessage(username, arrays[1]);
+                                                            ctx.writeAndFlush(groupQuitRequestMessage);
+                                                            break;
+                                                        case "quit":
+                                                            ctx.channel().close();
+                                                            return;
+                                                    }
                                                 }
                                             }, "system in").start();
                                         }
