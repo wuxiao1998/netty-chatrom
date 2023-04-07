@@ -33,6 +33,8 @@ public class MessageCodec extends ByteToMessageCodec<Message> {
         byteBuf.writeByte(message.getMessageType());
         // 5.序列号 4
         byteBuf.writeInt(message.getSequenceId());
+        // 对其填充，让长度在12个字节处开始
+        byteBuf.writeByte(0);
         // 6.获取内容的字节数组
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(bos);
@@ -56,6 +58,8 @@ public class MessageCodec extends ByteToMessageCodec<Message> {
         byte messageType = byteBuf.readByte();
         // 5.获取序列号
         int sequenceId = byteBuf.readInt();
+        // 对其填充读取
+        byte b = byteBuf.readByte();
         // 6.获取长度
         int length = byteBuf.readInt();
         // 7.获取内容
