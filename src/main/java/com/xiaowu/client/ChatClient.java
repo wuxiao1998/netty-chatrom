@@ -1,6 +1,7 @@
 package com.xiaowu.client;
 
 import com.xiaowu.message.LoginRequestMessage;
+import com.xiaowu.message.LoginResponseMessage;
 import com.xiaowu.protocol.MessageCodecSharable;
 import com.xiaowu.protocol.ProcotolFrameDecoder;
 import io.netty.bootstrap.Bootstrap;
@@ -15,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 public class ChatClient {
@@ -23,6 +26,8 @@ public class ChatClient {
     }
 
     private static void startClient() {
+        CountDownLatch WAIT_FOR_LOGIN = new CountDownLatch(1);
+        AtomicBoolean LOGIN = new AtomicBoolean(false);
         NioEventLoopGroup group = new NioEventLoopGroup();
         LoggingHandler loggingHandler = new LoggingHandler();
         MessageCodecSharable messageCodecSharable = new MessageCodecSharable();
@@ -35,12 +40,16 @@ public class ChatClient {
                         protected void initChannel(NioSocketChannel ch) throws Exception {
                             ch.pipeline()
                                     .addLast(new ProcotolFrameDecoder())
-                                    .addLast(loggingHandler)
                                     .addLast(messageCodecSharable)
                                     .addLast("client handler", new ChannelInboundHandlerAdapter() {
                                         @Override
                                         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
                                             log.debug("msg:{}", msg);
+                                            if (msg instanceof LoginResponseMessage) {
+                                                LoginResponseMessage loginResponseMessage = (LoginResponseMessage) msg;
+                                                LOGIN.set(loginResponseMessage.isSuccess());
+                                            }
+                                            WAIT_FOR_LOGIN.countDown();
                                         }
 
                                         @Override
@@ -54,11 +63,26 @@ public class ChatClient {
                                                 String password = scanner.nextLine();
                                                 LoginRequestMessage message = new LoginRequestMessage(username, password);
                                                 ctx.writeAndFlush(message);
-                                                System.out.println("等待输入。。。。");
                                                 try {
-                                                    System.in.read();
-                                                } catch (IOException e) {
+                                                    WAIT_FOR_LOGIN.await();
+                                                } catch (InterruptedException e) {
                                                     throw new RuntimeException(e);
+                                                }
+                                                if (!LOGIN.get()) {
+                                                    ctx.channel().close();
+                                                    return;
+                                                }
+                                                System.out.println("login success");
+                                                while (true) {
+                                                    System.out.println("==================================");
+                                                    System.out.println("send [username] [content]");
+                                                    System.out.println("gsend [group name] [content]");
+                                                    System.out.println("gcreate [group name] [m1,m2,m3...]");
+                                                    System.out.println("gmembers [group name]");
+                                                    System.out.println("gjoin [group name]");
+                                                    System.out.println("gquit [group name]");
+                                                    System.out.println("quit");
+                                                    System.out.println("==================================");
                                                 }
                                             }, "system in").start();
                                         }
