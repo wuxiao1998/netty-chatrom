@@ -3,6 +3,7 @@ package com.xiaowu.server;
 import com.xiaowu.protocol.MessageCodecSharable;
 import com.xiaowu.protocol.ProcotolFrameDecoder;
 import com.xiaowu.server.handler.*;
+import com.xiaowu.server.session.GroupSessionFactory;
 import com.xiaowu.server.session.SessionFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -10,6 +11,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -41,6 +45,19 @@ public class ChatServer {
                             .addLast(new ProcotolFrameDecoder()).addLast(loggingHandler)
                             // 自定义编解码处理器
                             .addLast(messageCodecSharable)
+                            .addLast(new IdleStateHandler(60, 0, 0))
+                            .addLast(new ChannelDuplexHandler() {
+                                @Override
+                                public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+                                    if (evt instanceof IdleStateEvent) {
+                                        IdleStateEvent event = (IdleStateEvent) evt;
+                                        if (event.state() == IdleState.READER_IDLE) {
+                                            SessionFactory.getSession().unbind(ctx.channel());
+                                            ctx.channel().close();
+                                        }
+                                    }
+                                }
+                            })
                             .addLast(new ChannelInboundHandlerAdapter() {
                                 @Override
                                 public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -53,6 +70,7 @@ public class ChatServer {
                                     log.info("{} incative", ctx.channel());
                                     SessionFactory.getSession().unbind(ctx.channel());
                                 }
+
                                 @Override
                                 public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
                                     log.info("error:{}", cause.getMessage());

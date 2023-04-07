@@ -5,13 +5,13 @@ import com.xiaowu.protocol.MessageCodecSharable;
 import com.xiaowu.protocol.ProcotolFrameDecoder;
 import com.xiaowu.server.session.SessionFactory;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.ChannelInitializer;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -44,6 +44,19 @@ public class ChatClient {
                             ch.pipeline()
                                     .addLast(new ProcotolFrameDecoder())
                                     .addLast(messageCodecSharable)
+                                    .addLast(new IdleStateHandler(0, 30, 0))
+                                    .addLast(new ChannelDuplexHandler() {
+                                        @Override
+                                        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+                                            if (evt instanceof IdleStateEvent) {
+                                                IdleStateEvent event = (IdleStateEvent) evt;
+                                                if (event.state() == IdleState.WRITER_IDLE) {
+//                                                    log.debug("send heart...");
+                                                    ctx.writeAndFlush(new PingMessage());
+                                                }
+                                            }
+                                        }
+                                    })
                                     .addLast("client handler", new ChannelInboundHandlerAdapter() {
                                         @Override
                                         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
