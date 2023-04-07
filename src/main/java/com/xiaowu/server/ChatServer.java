@@ -1,11 +1,9 @@
 package com.xiaowu.server;
 
-import com.xiaowu.message.LoginRequestMessage;
-import com.xiaowu.message.LoginResponseMessage;
 import com.xiaowu.protocol.MessageCodecSharable;
 import com.xiaowu.protocol.ProcotolFrameDecoder;
-import com.xiaowu.server.service.UserService;
-import com.xiaowu.server.service.UserServiceFactory;
+import com.xiaowu.server.handler.ChatSendMessageSimpleChannelInboundHandle;
+import com.xiaowu.server.handler.LoginRequestMessageSimpleChannelInboundHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -26,6 +24,8 @@ public class ChatServer {
         NioEventLoopGroup workerGroup = new NioEventLoopGroup();
         LoggingHandler loggingHandler = new LoggingHandler();
         MessageCodecSharable messageCodecSharable = new MessageCodecSharable();
+        ChatSendMessageSimpleChannelInboundHandle chatSendMessageHandler = new ChatSendMessageSimpleChannelInboundHandle();
+        LoginRequestMessageSimpleChannelInboundHandler loginRequestMessageSimpleChannelInboundHandler = new LoginRequestMessageSimpleChannelInboundHandler();
         try {
             Channel channel = new ServerBootstrap().channel(NioServerSocketChannel.class).group(new NioEventLoopGroup()).childHandler(new ChannelInitializer<NioSocketChannel>() {
                 @Override
@@ -43,20 +43,8 @@ public class ChatServer {
                                     log.info("channel {} is connection...", ctx.channel().remoteAddress());
                                 }
                             })
-                            .addLast(new SimpleChannelInboundHandler<LoginRequestMessage>() {
-                                @Override
-                                protected void channelRead0(ChannelHandlerContext ctx, LoginRequestMessage msg) throws Exception {
-                                    String username = msg.getUsername();
-                                    String password = msg.getPassword();
-                                    UserService userService = UserServiceFactory.getUserService();
-                                    boolean login = userService.login(username, password);
-                                    LoginResponseMessage responseMessage = new LoginResponseMessage(false, "登录失败");
-                                    if (login) {
-                                        responseMessage = new LoginResponseMessage(true, "登录成功");
-                                    }
-                                    ctx.writeAndFlush(responseMessage);
-                                }
-                            })
+                            .addLast(loginRequestMessageSimpleChannelInboundHandler)
+                            .addLast(chatSendMessageHandler);
                     ;
                 }
             }).bind("127.0.0.1", 8080).sync().channel();
@@ -68,4 +56,5 @@ public class ChatServer {
             workerGroup.shutdownGracefully();
         }
     }
+
 }
