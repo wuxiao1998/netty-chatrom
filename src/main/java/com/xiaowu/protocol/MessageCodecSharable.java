@@ -75,7 +75,7 @@ public class MessageCodecSharable extends MessageToMessageCodec<ByteBuf, Message
         Message message = (Message) ois.readObject();
         log.debug(
                 "magicNum:{},version:{},serializeType:{},messageType:{},sequenceId:{},length:{}",
-                magicNum, version, serializeType, messageType, sequenceId, length
+                magicNum.toString(), version, serializeType, messageType, sequenceId, length
         );
         log.debug("message is {}", message);
         // 放入list，传入下一个handler
