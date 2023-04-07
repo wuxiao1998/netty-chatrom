@@ -2,6 +2,7 @@ package com.xiaowu.protocol;
 
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 
+
 public class ProcotolFrameDecoder extends LengthFieldBasedFrameDecoder {
 
     public ProcotolFrameDecoder() {

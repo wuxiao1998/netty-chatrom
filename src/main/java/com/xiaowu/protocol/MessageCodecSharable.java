@@ -2,6 +2,7 @@ package com.xiaowu.protocol;
 
 import com.xiaowu.message.Message;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
 import io.netty.handler.codec.MessageToMessageCodec;
@@ -18,6 +19,7 @@ import java.util.List;
  * 解码和编码
  */
 @Slf4j
+@ChannelHandler.Sharable
 public class MessageCodecSharable extends MessageToMessageCodec<ByteBuf, Message> {
     private final static byte[] MAGIC_NUM = {1, 2, 3, 4};
     private final static byte Version = 1;
