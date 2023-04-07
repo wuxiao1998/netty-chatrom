@@ -22,8 +22,8 @@ public class MessageCodec extends ByteToMessageCodec<Message> {
     private final static byte Version = 1;
 
     @Override
-    protected void encode(ChannelHandlerContext channelHandlerContext, Message message, ByteBuf byteBuf) throws Exception {
-        // 1.魔数 7字节
+    public void encode(ChannelHandlerContext channelHandlerContext, Message message, ByteBuf byteBuf) throws Exception {
+        // 1.魔数 4字节
         byteBuf.writeBytes(MAGIC_NUM);
         // 2.协议版本 1
         byteBuf.writeByte(Version);
@@ -45,7 +45,7 @@ public class MessageCodec extends ByteToMessageCodec<Message> {
     }
 
     @Override
-    protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) throws Exception {
+    public void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) throws Exception {
         // 1.获取魔数
         ByteBuf magicNum = byteBuf.readBytes(MAGIC_NUM.length);
         // 2.获取协议版本

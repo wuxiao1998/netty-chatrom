@@ -1,12 +1,13 @@
 package com.xiaowu.message;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.ToString;
 
 /**
  * @author yihang
  */
-@Getter
+@Data
 @ToString(callSuper = true)
 public class RpcRequestMessage extends Message {
 
