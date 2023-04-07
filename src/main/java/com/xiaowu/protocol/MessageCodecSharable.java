@@ -41,10 +41,7 @@ public class MessageCodecSharable extends MessageToMessageCodec<ByteBuf, Message
         // 对其填充，让长度在12个字节处开始
         byteBuf.writeByte(0);
         // 6.获取内容的字节数组
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(bos);
-        oos.writeObject(message);
-        byte[] bytes = bos.toByteArray();
+        byte[] bytes = Serializer.Algorithm.Java.serialize(message);
         // 7.长度
         byteBuf.writeInt(bytes.length);
         // 8.写入内容
@@ -71,8 +68,7 @@ public class MessageCodecSharable extends MessageToMessageCodec<ByteBuf, Message
         // 7.获取内容
         byte[] bytes = new byte[length];
         byteBuf.readBytes(bytes, 0, length);
-        ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
-        Message message = (Message) ois.readObject();
+        Message message = Serializer.Algorithm.Java.deserialize(Message.class, bytes);
         log.debug(
                 "magicNum:{},version:{},serializeType:{},messageType:{},sequenceId:{},length:{}",
                 magicNum.toString(), version, serializeType, messageType, sequenceId, length
