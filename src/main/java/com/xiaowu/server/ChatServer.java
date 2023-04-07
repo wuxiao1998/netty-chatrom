@@ -45,7 +45,7 @@ public class ChatServer {
                             .addLast(new ProcotolFrameDecoder()).addLast(loggingHandler)
                             // 自定义编解码处理器
                             .addLast(messageCodecSharable)
-                            .addLast(new IdleStateHandler(60, 0, 0))
+                            .addLast(new IdleStateHandler(5, 0, 0))
                             .addLast(new ChannelDuplexHandler() {
                                 @Override
                                 public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {

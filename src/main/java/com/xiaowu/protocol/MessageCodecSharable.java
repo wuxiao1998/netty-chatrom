@@ -1,5 +1,6 @@
 package com.xiaowu.protocol;
 
+import com.xiaowu.config.Config;
 import com.xiaowu.message.Message;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
@@ -33,7 +34,7 @@ public class MessageCodecSharable extends MessageToMessageCodec<ByteBuf, Message
         // 2.协议版本 1
         byteBuf.writeByte(Version);
         // 3.序列化算法 0:jdk 1:json 1
-        byteBuf.writeByte(0);
+        byteBuf.writeByte(Config.getSerializerAlgorithm().ordinal());
         // 4.指令类型  1
         byteBuf.writeByte(message.getMessageType());
         // 5.序列号 4
@@ -41,7 +42,7 @@ public class MessageCodecSharable extends MessageToMessageCodec<ByteBuf, Message
         // 对其填充，让长度在12个字节处开始
         byteBuf.writeByte(0);
         // 6.获取内容的字节数组
-        byte[] bytes = Serializer.Algorithm.Java.serialize(message);
+        byte[] bytes = Config.getSerializerAlgorithm().serialize(message);
         // 7.长度
         byteBuf.writeInt(bytes.length);
         // 8.写入内容
@@ -68,7 +69,7 @@ public class MessageCodecSharable extends MessageToMessageCodec<ByteBuf, Message
         // 7.获取内容
         byte[] bytes = new byte[length];
         byteBuf.readBytes(bytes, 0, length);
-        Message message = Serializer.Algorithm.Java.deserialize(Message.class, bytes);
+        Object message = Serializer.Algorithm.values()[serializeType].deserialize(Message.getMessageClass(messageType), bytes);
         log.debug(
                 "magicNum:{},version:{},serializeType:{},messageType:{},sequenceId:{},length:{}",
                 magicNum.toString(), version, serializeType, messageType, sequenceId, length

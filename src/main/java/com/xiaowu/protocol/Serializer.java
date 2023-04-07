@@ -43,9 +43,19 @@ public interface Serializer {
             }
         },
 
-//        Json {
-//
-//        }
+        Json {
+            @Override
+            public <T> T deserialize(Class<T> clazz, byte[] bytes) {
+                String json = new String(bytes, StandardCharsets.UTF_8);
+                return new Gson().fromJson(json, clazz);
+            }
+
+            @Override
+            public <T> byte[] serialize(T object) {
+                String json = new Gson().toJson(object);
+                return json.getBytes(StandardCharsets.UTF_8);
+            }
+        }
     }
 
 }

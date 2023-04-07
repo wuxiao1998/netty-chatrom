@@ -44,7 +44,7 @@ public class ChatClient {
                             ch.pipeline()
                                     .addLast(new ProcotolFrameDecoder())
                                     .addLast(messageCodecSharable)
-                                    .addLast(new IdleStateHandler(0, 30, 0))
+                                    .addLast(new IdleStateHandler(0, 3, 0))
                                     .addLast(new ChannelDuplexHandler() {
                                         @Override
                                         public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
