@@ -6,6 +6,8 @@ import com.xiaowu.protocol.MessageCodec;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.handler.codec.FixedLengthFrameDecoder;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.logging.LoggingHandler;
 import org.junit.Test;
 
@@ -16,6 +18,7 @@ public class TestMessageCodec {
     public void test1() throws Exception {
         EmbeddedChannel channel = new EmbeddedChannel(
                 new LoggingHandler(),
+                new LengthFieldBasedFrameDecoder(1024,11,4,0,0),
                 new MessageCodec()
         );
 
@@ -28,6 +31,7 @@ public class TestMessageCodec {
         new MessageCodec().encode(null,loginRequestMessage,byteBuf);
         ByteBuf byte1 = byteBuf.slice(0, 100);
         ByteBuf byte2 = byteBuf.slice(100, byteBuf.readableBytes() - 100);
+        byteBuf.retain();
         channel.writeInbound(byte1);
         channel.writeInbound(byte2);
 
