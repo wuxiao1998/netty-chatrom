@@ -15,7 +15,13 @@ public class GroupSessionMemoryImpl implements GroupSession {
     @Override
     public Group createGroup(String name, Set<String> members) {
         Group group = new Group(name, members);
-        return groupMap.putIfAbsent(name, group);
+        Group oldGroup = groupMap.get(name);
+        if (oldGroup == null) {
+            groupMap.putIfAbsent(name, group);
+            return null;
+        } else {
+            return oldGroup;
+        }
     }
 
     @Override

@@ -3,6 +3,8 @@ package com.xiaowu.server;
 import com.xiaowu.protocol.MessageCodecSharable;
 import com.xiaowu.protocol.ProcotolFrameDecoder;
 import com.xiaowu.server.handler.ChatSendMessageSimpleChannelInboundHandle;
+import com.xiaowu.server.handler.GroupCreateMessageSimpleChannelInboundHandler;
+import com.xiaowu.server.handler.GroupSendMessageSimpleChannelInboundHandler;
 import com.xiaowu.server.handler.LoginRequestMessageSimpleChannelInboundHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -26,6 +28,8 @@ public class ChatServer {
         MessageCodecSharable messageCodecSharable = new MessageCodecSharable();
         ChatSendMessageSimpleChannelInboundHandle chatSendMessageHandler = new ChatSendMessageSimpleChannelInboundHandle();
         LoginRequestMessageSimpleChannelInboundHandler loginRequestMessageSimpleChannelInboundHandler = new LoginRequestMessageSimpleChannelInboundHandler();
+        GroupCreateMessageSimpleChannelInboundHandler groupCreateMessageSimpleChannelInboundHandler = new GroupCreateMessageSimpleChannelInboundHandler();
+        GroupSendMessageSimpleChannelInboundHandler groupSendMessageSimpleChannelInboundHandler = new GroupSendMessageSimpleChannelInboundHandler();
         try {
             Channel channel = new ServerBootstrap().channel(NioServerSocketChannel.class).group(new NioEventLoopGroup()).childHandler(new ChannelInitializer<NioSocketChannel>() {
                 @Override
@@ -44,7 +48,11 @@ public class ChatServer {
                                 }
                             })
                             .addLast(loginRequestMessageSimpleChannelInboundHandler)
-                            .addLast(chatSendMessageHandler);
+                            .addLast(chatSendMessageHandler)
+                            .addLast(groupCreateMessageSimpleChannelInboundHandler)
+                            .addLast(groupSendMessageSimpleChannelInboundHandler)
+
+
                     ;
                 }
             }).bind("127.0.0.1", 8080).sync().channel();

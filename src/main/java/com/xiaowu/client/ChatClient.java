@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -96,8 +97,10 @@ public class ChatClient {
                                                             ctx.writeAndFlush(groupChatRequestMessage);
                                                             break;
                                                         case "gcreate":
+                                                            Set<String> members = Arrays.stream(arrays[2].split(",")).collect(Collectors.toSet());
+                                                            members.add(username);
                                                             GroupCreateRequestMessage groupCreateRequestMessage = new GroupCreateRequestMessage(
-                                                                    arrays[1], Arrays.stream(arrays[2].split(",")).collect(Collectors.toSet())
+                                                                    arrays[1], members
                                                             );
                                                             ctx.writeAndFlush(groupCreateRequestMessage);
                                                             break;
