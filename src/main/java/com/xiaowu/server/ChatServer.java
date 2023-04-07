@@ -2,10 +2,7 @@ package com.xiaowu.server;
 
 import com.xiaowu.protocol.MessageCodecSharable;
 import com.xiaowu.protocol.ProcotolFrameDecoder;
-import com.xiaowu.server.handler.ChatSendMessageSimpleChannelInboundHandle;
-import com.xiaowu.server.handler.GroupCreateMessageSimpleChannelInboundHandler;
-import com.xiaowu.server.handler.GroupSendMessageSimpleChannelInboundHandler;
-import com.xiaowu.server.handler.LoginRequestMessageSimpleChannelInboundHandler;
+import com.xiaowu.server.handler.*;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -30,6 +27,9 @@ public class ChatServer {
         LoginRequestMessageSimpleChannelInboundHandler loginRequestMessageSimpleChannelInboundHandler = new LoginRequestMessageSimpleChannelInboundHandler();
         GroupCreateMessageSimpleChannelInboundHandler groupCreateMessageSimpleChannelInboundHandler = new GroupCreateMessageSimpleChannelInboundHandler();
         GroupSendMessageSimpleChannelInboundHandler groupSendMessageSimpleChannelInboundHandler = new GroupSendMessageSimpleChannelInboundHandler();
+        GroupMembersMessageSimpleChannelInboundHandler groupMembersMessageSimpleChannelInboundHandler = new GroupMembersMessageSimpleChannelInboundHandler();
+        GroupJoinMessageSimpleChannelInboundHandler groupJoinMessageSimpleChannelInboundHandler = new GroupJoinMessageSimpleChannelInboundHandler();
+        GroupQuitMessageSimpleChannelInboundHandler groupQuitMessageSimpleChannelInboundHandler = new GroupQuitMessageSimpleChannelInboundHandler();
         try {
             Channel channel = new ServerBootstrap().channel(NioServerSocketChannel.class).group(new NioEventLoopGroup()).childHandler(new ChannelInitializer<NioSocketChannel>() {
                 @Override
@@ -51,6 +51,9 @@ public class ChatServer {
                             .addLast(chatSendMessageHandler)
                             .addLast(groupCreateMessageSimpleChannelInboundHandler)
                             .addLast(groupSendMessageSimpleChannelInboundHandler)
+                            .addLast(groupMembersMessageSimpleChannelInboundHandler)
+                            .addLast(groupJoinMessageSimpleChannelInboundHandler)
+                            .addLast(groupQuitMessageSimpleChannelInboundHandler)
 
 
                     ;
