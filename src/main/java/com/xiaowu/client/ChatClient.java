@@ -3,6 +3,7 @@ package com.xiaowu.client;
 import com.xiaowu.message.*;
 import com.xiaowu.protocol.MessageCodecSharable;
 import com.xiaowu.protocol.ProcotolFrameDecoder;
+import com.xiaowu.server.session.SessionFactory;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -44,6 +45,16 @@ public class ChatClient {
                                     .addLast(new ProcotolFrameDecoder())
                                     .addLast(messageCodecSharable)
                                     .addLast("client handler", new ChannelInboundHandlerAdapter() {
+                                        @Override
+                                        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+                                            log.info("{} incative", ctx.channel());
+                                        }
+
+                                        @Override
+                                        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+                                            log.info("error:{}", cause.getMessage());
+                                        }
+
                                         @Override
                                         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
                                             log.debug("msg:{}", msg);
@@ -120,7 +131,9 @@ public class ChatClient {
                                                             ctx.channel().close();
                                                             return;
                                                     }
+
                                                 }
+
                                             }, "system in").start();
                                         }
                                     });

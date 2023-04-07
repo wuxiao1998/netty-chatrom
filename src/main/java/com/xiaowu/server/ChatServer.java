@@ -3,6 +3,7 @@ package com.xiaowu.server;
 import com.xiaowu.protocol.MessageCodecSharable;
 import com.xiaowu.protocol.ProcotolFrameDecoder;
 import com.xiaowu.server.handler.*;
+import com.xiaowu.server.session.SessionFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -45,6 +46,17 @@ public class ChatServer {
                                 public void channelActive(ChannelHandlerContext ctx) throws Exception {
                                     super.channelActive(ctx);
                                     log.info("channel {} is connection...", ctx.channel().remoteAddress());
+                                }
+
+                                @Override
+                                public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+                                    log.info("{} incative", ctx.channel());
+                                    SessionFactory.getSession().unbind(ctx.channel());
+                                }
+                                @Override
+                                public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+                                    log.info("error:{}", cause.getMessage());
+                                    SessionFactory.getSession().unbind(ctx.channel());
                                 }
                             })
                             .addLast(loginRequestMessageSimpleChannelInboundHandler)
