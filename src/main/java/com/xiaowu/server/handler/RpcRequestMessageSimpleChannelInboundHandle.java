@@ -22,10 +22,11 @@ public class RpcRequestMessageSimpleChannelInboundHandle extends SimpleChannelIn
             String interfaceName = requestMessage.getInterfaceName();
             String methodName = requestMessage.getMethodName();
             Class[] parameterTypes = requestMessage.getParameterTypes();
+            Object[] parameterValue = requestMessage.getParameterValue();
             // 反射根据全类名获取服务类
             Object service = ServicesFactory.getService(Class.forName(interfaceName));
             Method method = service.getClass().getDeclaredMethod(methodName, parameterTypes);
-            Object returnValue = method.invoke(parameterTypes);
+            Object returnValue = method.invoke(service,parameterValue);
             rpcResponseMessage.setReturnValue(returnValue);
         } catch (Exception e) {
             log.error("rpc error", e);
